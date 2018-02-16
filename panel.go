@@ -10,11 +10,18 @@ type Panel struct {
 	option *PanelOption
 }
 
-func NewPanel() *Panel {
+func NewPanel(opt *PanelOption) (*Panel, error) {
+	var err error
+	if opt == nil {
+		opt, err = NewPanelOption(nil)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return &Panel{
 		data:   make([]*PanelData, 0, 0),
-		option: NewPanelOption(),
-	}
+		option: opt,
+	}, nil
 }
 
 func (panel *Panel) String() string {

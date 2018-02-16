@@ -17,18 +17,25 @@ Structure:
 
 type Plotter struct {
 	panels   []*Panel
-	font     *FontConfig
+	font     FontConfig
 	terminal string
 	figname  string
 }
 
-func NewPlotter() *Plotter {
+func NewPlotter(font FontConfig) (*Plotter, error) {
+	var err error
+	if font == nil {
+		font, err = NewFontConfig(nil)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return &Plotter{
 		panels:   make([]*Panel, 0, 0),
-		font:     NewFontConfig(),
+		font:     font,
 		terminal: `postscript eps enhanced color`,
 		figname:  `output.eps`,
-	}
+	}, nil
 }
 
 func (plotter *Plotter) String() string {
@@ -46,12 +53,16 @@ set output "%s"`,
 	return s
 }
 
-func (plotter *Plotter) AddPanel(panel *Panel) {
-	plotter.panels = append(plotter.panels, panel)
-}
-
 func (plotter *Plotter) SetOutput(figname string) {
 	plotter.figname = figname
+}
+
+func (plotter *Plotter) SetTerminal(terminal string) {
+	plotter.terminal = terminal
+}
+
+func (plotter *Plotter) AddPanel(panel *Panel) {
+	plotter.panels = append(plotter.panels, panel)
 }
 
 func (plotter *Plotter) Plot() error {

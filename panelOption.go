@@ -16,8 +16,8 @@ type AxisOption struct {
 	log         bool
 }
 
-func NewAxisOption(name string) *AxisOption {
-	return &AxisOption{
+func NewAxisOption(name string, values map[string]interface{}) (*AxisOption, error) {
+	axis := &AxisOption{
 		name:        name,
 		min:         0,
 		max:         10,
@@ -27,6 +27,38 @@ func NewAxisOption(name string) *AxisOption {
 		labelOffset: 0,
 		log:         false,
 	}
+	if values != nil {
+		for key, value := range values {
+			if err := axis.Set(key, value); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return axis, nil
+}
+
+func (axis *AxisOption) Set(key string, value interface{}) error {
+	switch key {
+	case `name`:
+		axis.name = value.(string)
+	case `min`:
+		axis.min = value.(float64)
+	case `max`:
+		axis.max = value.(float64)
+	case `tics`:
+		axis.tics = value.(float64)
+	case `mtics`:
+		axis.mtics = value.(float64)
+	case `label`:
+		axis.label = value.(string)
+	case `labelOffset`, `labeloffset`:
+		axis.labelOffset = value.(float64)
+	case `log`:
+		axis.log = value.(bool)
+	default:
+		return fmt.Errorf(`Unknow key %v`, key)
+	}
+	return nil
 }
 
 func (axis *AxisOption) String() string {
@@ -56,18 +88,51 @@ type PanelOption struct {
 	key    string
 }
 
-func NewPanelOption() *PanelOption {
-	return &PanelOption{
-		xaxis: NewAxisOption(`x`),
-		yaxis: NewAxisOption(`y`),
+func NewPanelOption(values map[string]interface{}) (*PanelOption, error) {
+	xaxis, err := NewAxisOption(`x`, nil)
+	if err != nil {
+		return nil, err
+	}
+	yaxis, err := NewAxisOption(`y`, nil)
+	if err != nil {
+		return nil, err
+	}
+	opt := &PanelOption{
+		xaxis: xaxis,
+		yaxis: yaxis,
 		//zaxis:  NewAxisOption(),
 		sample: 1000,
 		grid:   "",
 		key:    "",
 	}
+	if values != nil {
+		for key, value := range values {
+			if err := opt.Set(key, value); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return opt, nil
+}
+func (opt *PanelOption) Set(key string, value interface{}) error {
+	switch key {
+	case `grid`:
+		opt.grid = value.(string)
+	case `sample`:
+		opt.sample = value.(int)
+	case `key`:
+		opt.key = value.(string)
+	case `xaxis`:
+		opt.xaxis = value.(*AxisOption)
+	case `yaxis`:
+		opt.yaxis = value.(*AxisOption)
+	default:
+		return fmt.Errorf(`Unknown key %v`, key)
+	}
+	return nil
 }
 
-func (option *PanelOption) String() string {
+func (opt *PanelOption) String() string {
 	return fmt.Sprintf(`
 %s
 %s
@@ -75,5 +140,5 @@ set sample %d
 set grid %s
 set key %s
 `,
-		option.xaxis.String(), option.yaxis.String(), option.sample, option.grid, option.key)
+		opt.xaxis.String(), opt.yaxis.String(), opt.sample, opt.grid, opt.key)
 }

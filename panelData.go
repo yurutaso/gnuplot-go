@@ -10,14 +10,18 @@ type PanelData struct {
 	option *DataOption
 }
 
-func NewPanelData(name string, option *DataOption) *PanelData {
-	if option == nil {
-		option = NewDataOption()
+func NewPanelData(name string, opt *DataOption) (*PanelData, error) {
+	var err error
+	if opt == nil {
+		opt, err = NewDataOption(nil)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &PanelData{
 		name:   name,
-		option: option,
-	}
+		option: opt,
+	}, nil
 }
 
 func (data *PanelData) String() string {

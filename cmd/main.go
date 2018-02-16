@@ -6,19 +6,19 @@ import (
 )
 
 func main() {
-	opt1 := goplot.NewDataOption()
+	opt1, _ := goplot.NewDataOption(nil)
 
-	opt2 := goplot.NewDataOption()
-	opt2.SetUsing(`1:3`)
+	opt2, _ := goplot.NewDataOption(nil)
+	opt2.Set(`u`, `1:3`)
 
-	data1 := goplot.NewPanelData(`test.dat`, opt1)
-	data2 := goplot.NewPanelData(`test.dat`, opt2)
+	data1, _ := goplot.NewPanelData(`test.dat`, opt1)
+	data2, _ := goplot.NewPanelData(`test.dat`, opt2)
 
-	panel := goplot.NewPanel()
+	panel, _ := goplot.NewPanel(nil)
 	panel.AddData(data1)
 	panel.AddData(data2)
 
-	plotter := goplot.NewPlotter()
+	plotter, _ := goplot.NewPlotter(nil)
 	plotter.AddPanel(panel)
 	plotter.AddPanel(panel)
 	fmt.Println(plotter)
