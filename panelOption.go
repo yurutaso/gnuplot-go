@@ -133,12 +133,15 @@ func (opt *PanelOption) Set(key string, value interface{}) error {
 }
 
 func (opt *PanelOption) String() string {
-	return fmt.Sprintf(`
+	s := fmt.Sprintf(`
 %s
 %s
 set sample %d
 set grid %s
 set key %s
-`,
-		opt.xaxis.String(), opt.yaxis.String(), opt.sample, opt.grid, opt.key)
+`, opt.xaxis.String(), opt.yaxis.String(), opt.sample, opt.grid, opt.key)
+	if len(opt.grid) == 0 {
+		s += "\nunset grid\n"
+	}
+	return s
 }
