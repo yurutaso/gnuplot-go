@@ -6,8 +6,9 @@ import (
 
 /* type Panel */
 type Panel struct {
-	Data []*PanelData
-	Opt  *PanelOption
+	Data       []*PanelData
+	Opt        *PanelOption
+	Annotation []*PanelAnnotation
 }
 
 func NewPanel(opt *PanelOption) (*Panel, error) {
