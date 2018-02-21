@@ -32,6 +32,7 @@ func (panel *Panel) String() string {
 	}
 	s += `plot `
 	s += strings.Join(strs, `,`)
+	s += "\n"
 	return s
 }
 

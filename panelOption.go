@@ -73,15 +73,17 @@ set %slabel "%s" offset %f`,
 		axis.name, axis.label, axis.labelOffset,
 	)
 	if axis.log {
-		s += `set log` + axis.name
+		s += fmt.Sprintf("set log %s\n", axis.name)
 	}
 	return s
 }
 
 /* type PanelOption */
 type PanelOption struct {
-	xaxis *AxisOption
-	yaxis *AxisOption
+	Xaxis     *AxisOption
+	Yaxis     *AxisOption
+	showXaxis bool
+	showYaxis bool
 	//zaxis  *AxisOption
 	sample int
 	grid   string
@@ -89,17 +91,17 @@ type PanelOption struct {
 }
 
 func NewPanelOption(values map[string]interface{}) (*PanelOption, error) {
-	xaxis, err := NewAxisOption(`x`, nil)
+	Xaxis, err := NewAxisOption(`x`, nil)
 	if err != nil {
 		return nil, err
 	}
-	yaxis, err := NewAxisOption(`y`, nil)
+	Yaxis, err := NewAxisOption(`y`, nil)
 	if err != nil {
 		return nil, err
 	}
 	opt := &PanelOption{
-		xaxis: xaxis,
-		yaxis: yaxis,
+		Xaxis: Xaxis,
+		Yaxis: Yaxis,
 		//zaxis:  NewAxisOption(),
 		sample: 1000,
 		grid:   "",
@@ -123,25 +125,37 @@ func (opt *PanelOption) Set(key string, value interface{}) error {
 	case `key`:
 		opt.key = value.(string)
 	case `xaxis`:
-		opt.xaxis = value.(*AxisOption)
+		opt.Xaxis = value.(*AxisOption)
 	case `yaxis`:
-		opt.yaxis = value.(*AxisOption)
+		opt.Yaxis = value.(*AxisOption)
 	default:
 		return fmt.Errorf(`Unknown key %v`, key)
 	}
 	return nil
 }
 
+func (opt *PanelOption) HideXaxis() {
+	opt.showXaxis = false
+}
+func (opt *PanelOption) HideYaxis() {
+	opt.showYaxis = false
+}
+
 func (opt *PanelOption) String() string {
-	s := fmt.Sprintf(`
-%s
-%s
+	s := ""
+	if opt.showXaxis {
+		s += opt.Xaxis.String()
+	}
+	if opt.showYaxis {
+		s += opt.Yaxis.String()
+	}
+	s += fmt.Sprintf(`
 set sample %d
 set grid %s
 set key %s
-`, opt.xaxis.String(), opt.yaxis.String(), opt.sample, opt.grid, opt.key)
+`, opt.sample, opt.grid, opt.key)
 	if len(opt.grid) == 0 {
-		s += "\nunset grid\n"
+		s += "unset grid\n"
 	}
 	return s
 }

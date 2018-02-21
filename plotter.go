@@ -16,10 +16,14 @@ Structure:
 */
 
 type Plotter struct {
-	panels   []*Panel
-	font     FontConfig
-	terminal string
-	figname  string
+	panels     []*Panel
+	font       FontConfig
+	terminal   string
+	figname    string
+	marginsIn  [2]float64
+	marginsOut [4]float64
+	row        int
+	col        int
 }
 
 func NewPlotter(font FontConfig) (*Plotter, error) {
@@ -31,24 +35,76 @@ func NewPlotter(font FontConfig) (*Plotter, error) {
 		}
 	}
 	return &Plotter{
-		panels:   make([]*Panel, 0, 0),
-		font:     font,
-		terminal: `postscript eps enhanced color`,
-		figname:  `output.eps`,
+		panels:     make([]*Panel, 0, 0),
+		font:       font,
+		terminal:   `postscript eps enhanced color`,
+		figname:    `output.eps`,
+		marginsOut: [4]float64{0.1, 0.2, 0.2, 0.1},
+		marginsIn:  [2]float64{0., 0.},
+		row:        1,
+		col:        1,
 	}, nil
 }
 
+func (plotter *Plotter) getSize() (float64, float64) {
+	xsize := 1.0 / (float64(plotter.row) + plotter.marginsOut[0] + plotter.marginsOut[2]) * (1.0 - plotter.marginsIn[0]/2.)
+	ysize := 1.0 / (float64(plotter.col) + plotter.marginsOut[1] + plotter.marginsOut[3]) * (1.0 - plotter.marginsIn[1]/2.)
+	return xsize, ysize
+}
+
+func (plotter *Plotter) getOrigin(col, row int) (float64, float64) {
+	x := 1.0 / (float64(plotter.row) + plotter.marginsOut[0] + plotter.marginsOut[2]) * (float64(row) + plotter.marginsOut[2])
+	y := 1.0 / (float64(plotter.col) + plotter.marginsOut[1] + plotter.marginsOut[3]) * (float64(col) + plotter.marginsOut[1])
+	return x, y
+}
+
+func (plotter *Plotter) getColumn(i int) (col, row int) {
+	row = i % plotter.row
+	col = int((i - row) / plotter.row)
+	return col, row
+}
+
+func (plotter *Plotter) SetLayout(col, row int) error {
+	if col < 1 || row < 1 {
+		return fmt.Errorf("col and row must be positive integer.")
+	}
+	plotter.col = col
+	plotter.row = row
+	return nil
+}
+
 func (plotter *Plotter) String() string {
+	xsize, ysize := plotter.getSize()
+
 	s := fmt.Sprintf(`#!/usr/bin/env/gnuplot
 %s
 set terminal %s
-set output "%s"`,
+set output "%s"
+set size %f, %f
+`,
 		plotter.font,
 		plotter.terminal,
 		plotter.figname,
+		xsize, ysize,
 	)
-	for _, panel := range plotter.panels {
+
+	multiplot := false
+	if plotter.col > 1 || plotter.row > 1 {
+		multiplot = true
+		s += fmt.Sprintf("set multiplot layout %d, %d\n", plotter.col, plotter.row)
+	}
+
+	for i, panel := range plotter.panels {
+		if multiplot {
+			col, row := plotter.getColumn(i)
+			x, y := plotter.getOrigin(col, row)
+			s += fmt.Sprintf("set origin %f, %f", x, y)
+		}
 		s += panel.String()
+	}
+
+	if multiplot {
+		s += "unset multiplot"
 	}
 	return s
 }

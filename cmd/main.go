@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/yurutaso/gnuplot-go"
 )
 
@@ -21,9 +20,7 @@ func main() {
 	plotter, _ := goplot.NewPlotter(nil)
 	plotter.AddPanel(panel)
 	plotter.AddPanel(panel)
-	fmt.Println(plotter)
-	/*
-		plotter.SetOutput(`output.eps`)
-		plotter.Plot()
-	*/
+	plotter.SetLayout(2, 1)
+	plotter.SetOutput(`output.eps`)
+	plotter.Plot()
 }
