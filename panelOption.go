@@ -11,9 +11,11 @@ type AxisOption struct {
 	max         float64
 	tics        float64
 	mtics       float64
+	format      string
 	label       string
 	labelOffset float64
 	log         bool
+	show        bool
 }
 
 func NewAxisOption(name string, values map[string]interface{}) (*AxisOption, error) {
@@ -23,9 +25,11 @@ func NewAxisOption(name string, values map[string]interface{}) (*AxisOption, err
 		max:         10,
 		tics:        10,
 		mtics:       2,
+		format:      `% g`,
 		label:       "label",
 		labelOffset: 0,
 		log:         false,
+		show:        true,
 	}
 	if values != nil {
 		for key, value := range values {
@@ -35,6 +39,14 @@ func NewAxisOption(name string, values map[string]interface{}) (*AxisOption, err
 		}
 	}
 	return axis, nil
+}
+
+func (axis *AxisOption) Show() {
+	axis.show = true
+}
+
+func (axis *AxisOption) Hide() {
+	axis.show = false
 }
 
 func (axis *AxisOption) Set(key string, value interface{}) error {
@@ -66,12 +78,21 @@ func (axis *AxisOption) String() string {
 set %srange [%f:%f]
 set %stics %f
 set m%stics %f
-set %slabel "%s" offset %f`,
+`,
 		axis.name, axis.min, axis.max,
 		axis.name, axis.tics,
 		axis.name, axis.mtics,
-		axis.name, axis.label, axis.labelOffset,
 	)
+	if axis.show {
+		s += fmt.Sprintf(`set format %s "%s"
+set %slabel "%s" offset %f
+`,
+			axis.name, axis.format,
+			axis.name, axis.label, axis.labelOffset,
+		)
+	} else {
+		s += fmt.Sprintf("set format %s \"\"\nset %slabel \"\"\n", axis.name, axis.name)
+	}
 	if axis.log {
 		s += fmt.Sprintf("set log %s\n", axis.name)
 	}
@@ -134,26 +155,14 @@ func (opt *PanelOption) Set(key string, value interface{}) error {
 	return nil
 }
 
-func (opt *PanelOption) HideXaxis() {
-	opt.showXaxis = false
-}
-func (opt *PanelOption) HideYaxis() {
-	opt.showYaxis = false
-}
-
 func (opt *PanelOption) String() string {
-	s := ""
-	if opt.showXaxis {
-		s += opt.Xaxis.String()
-	}
-	if opt.showYaxis {
-		s += opt.Yaxis.String()
-	}
-	s += fmt.Sprintf(`
+	s := fmt.Sprintf(`
+%s
+%s
 set sample %d
 set grid %s
 set key %s
-`, opt.sample, opt.grid, opt.key)
+`, opt.Xaxis, opt.Yaxis, opt.sample, opt.grid, opt.key)
 	if len(opt.grid) == 0 {
 		s += "unset grid\n"
 	}

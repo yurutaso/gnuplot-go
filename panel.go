@@ -6,8 +6,8 @@ import (
 
 /* type Panel */
 type Panel struct {
-	data   []*PanelData
-	option *PanelOption
+	Data []*PanelData
+	Opt  *PanelOption
 }
 
 func NewPanel(opt *PanelOption) (*Panel, error) {
@@ -19,27 +19,26 @@ func NewPanel(opt *PanelOption) (*Panel, error) {
 		}
 	}
 	return &Panel{
-		data:   make([]*PanelData, 0, 0),
-		option: opt,
+		Data: make([]*PanelData, 0, 0),
+		Opt:  opt,
 	}, nil
 }
 
 func (panel *Panel) String() string {
-	s := panel.option.String()
-	strs := make([]string, len(panel.data), len(panel.data))
-	for i, data := range panel.data {
+	s := panel.Opt.String()
+	strs := make([]string, len(panel.Data), len(panel.Data))
+	for i, data := range panel.Data {
 		strs[i] = data.String()
 	}
 	s += `plot `
 	s += strings.Join(strs, `,`)
-	s += "\n"
 	return s
 }
 
 func (panel *Panel) SetOption(opt *PanelOption) {
-	panel.option = opt
+	panel.Opt = opt
 }
 
 func (panel *Panel) AddData(data *PanelData) {
-	panel.data = append(panel.data, data)
+	panel.Data = append(panel.Data, data)
 }
