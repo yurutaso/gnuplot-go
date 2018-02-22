@@ -9,27 +9,27 @@ import (
 /* type PanelData */
 type PanelData struct {
 	name   string
-	option *DataOption
+	Opt    *PanelDataOption
 	atexit func()
 }
 
-func NewPanelData(name string, opt *DataOption) (*PanelData, error) {
-	var err error
+func NewPanelData(name string, opt *PanelDataOption) *PanelData {
 	if opt == nil {
-		opt, err = NewDataOption(nil)
-		if err != nil {
-			return nil, err
-		}
+		opt = NewPanelDataOption()
 	}
 	return &PanelData{
 		name:   name,
-		option: opt,
-	}, nil
+		Opt:    opt,
+		atexit: func() { return },
+	}
 }
 
-func NewPanelDataFromArray(xdata, ydata, zdata []float64, opt *DataOption) (*PanelData, error) {
+func NewPanelDataFromArray(xdata, ydata, zdata []float64, opt *PanelDataOption) (*PanelData, error) {
 	/* Generate tempfile to load data from gnuplot */
 	tmpfile, err := ioutil.TempFile("", "goplot")
+	if err != nil {
+		return nil, err
+	}
 	data := &PanelData{}
 	// register os.Remove(tmpfile) to atexit(), which is called when closing plotter.
 	// NOTE: Don't remove this tmpfile in this function. Remove it after plotter.Plot().
@@ -61,28 +61,20 @@ func NewPanelDataFromArray(xdata, ydata, zdata []float64, opt *DataOption) (*Pan
 		return nil, err
 	}
 
-	if opt == nil {
-		opt, err = NewDataOption(nil)
-		if err != nil {
-			return nil, err
-		}
-	}
-	data.name = tmpfile.Name()
-	data.option = opt
-	return data, nil
+	return NewPanelData(tmpfile.Name(), opt), nil
 }
 
 func (data *PanelData) String() string {
-	if data.option.isFunc {
-		return fmt.Sprintf(`%s %s`, data.name, data.option)
+	if data.Opt.isFunc {
+		return fmt.Sprintf(`%s %s`, data.name, data.Opt)
 	}
-	return fmt.Sprintf(`"%s" %s`, data.name, data.option)
+	return fmt.Sprintf(`"%s" %s`, data.name, data.Opt)
 }
 
 func (data *PanelData) SetData(name string) {
 	data.name = name
 }
 
-func (data *PanelData) SetOption(opt *DataOption) {
-	data.option = opt
+func (data *PanelData) SetOption(opt *PanelDataOption) {
+	data.Opt = opt
 }

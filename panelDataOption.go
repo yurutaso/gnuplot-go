@@ -4,8 +4,8 @@ import (
 	"fmt"
 )
 
-/* type DataOption */
-type DataOption struct {
+/* type PanelDataOption */
+type PanelDataOption struct {
 	isFunc    bool
 	using     string
 	index     int
@@ -14,12 +14,9 @@ type DataOption struct {
 	title     string
 }
 
-func NewDataOption(values map[string]interface{}) (*DataOption, error) {
-	ls, err := NewLineStyle(nil)
-	if err != nil {
-		return nil, err
-	}
-	opt := &DataOption{
+func NewPanelDataOption() *PanelDataOption {
+	ls := NewLineStyle()
+	opt := &PanelDataOption{
 		isFunc:    false,
 		using:     "1:2",
 		index:     0,
@@ -27,6 +24,11 @@ func NewDataOption(values map[string]interface{}) (*DataOption, error) {
 		lineStyle: ls,
 		title:     "",
 	}
+	return opt
+}
+
+func NewPanelDataOptionFromMap(values map[string]interface{}) (*PanelDataOption, error) {
+	opt := NewPanelDataOption()
 	if values != nil {
 		for key, value := range values {
 			if err := opt.Set(key, value); err != nil {
@@ -37,7 +39,7 @@ func NewDataOption(values map[string]interface{}) (*DataOption, error) {
 	return opt, nil
 }
 
-func (opt *DataOption) Set(key string, value interface{}) error {
+func (opt *PanelDataOption) Set(key string, value interface{}) error {
 	switch key {
 	case `isfunc`, `isFunc`:
 		opt.isFunc = value.(bool)
@@ -57,6 +59,12 @@ func (opt *DataOption) Set(key string, value interface{}) error {
 	return nil
 }
 
-func (opt *DataOption) String() string {
+func (opt *PanelDataOption) String() string {
 	return fmt.Sprintf("using %s index %d with %s title \"%s\" %s\n", opt.using, opt.index, opt.with, opt.title, opt.lineStyle)
+}
+
+func (opt *PanelDataOption) Copy() *PanelDataOption {
+	opt2 := &PanelDataOption{}
+	*opt2 = *opt
+	return opt2
 }

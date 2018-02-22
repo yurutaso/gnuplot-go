@@ -11,18 +11,14 @@ type Panel struct {
 	Annotation []PanelAnnotation
 }
 
-func NewPanel(opt *PanelOption) (*Panel, error) {
-	var err error
+func NewPanel(opt *PanelOption) *Panel {
 	if opt == nil {
-		opt, err = NewPanelOption(nil)
-		if err != nil {
-			return nil, err
-		}
+		opt = NewPanelOption()
 	}
 	return &Panel{
 		Data: make([]*PanelData, 0, 0),
 		Opt:  opt,
-	}, nil
+	}
 }
 
 func (panel *Panel) String() string {

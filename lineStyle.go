@@ -14,8 +14,8 @@ type LineStyle struct {
 	dashType  string
 }
 
-func NewLineStyle(values map[string]interface{}) (*LineStyle, error) {
-	ls := &LineStyle{
+func NewLineStyle() *LineStyle {
+	return &LineStyle{
 		lineWidth: 1,
 		lineType:  1,
 		lineColor: "#000000",
@@ -23,6 +23,10 @@ func NewLineStyle(values map[string]interface{}) (*LineStyle, error) {
 		pointSize: 1,
 		dashType:  "",
 	}
+}
+
+func NewLineStyleFromMap(values map[string]interface{}) (*LineStyle, error) {
+	ls := NewLineStyle()
 	if values != nil {
 		for key, value := range values {
 			if err := ls.Set(key, value); err != nil {

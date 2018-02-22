@@ -26,24 +26,17 @@ type Plotter struct {
 	col        int
 }
 
-func NewPlotter(font FontConfig) (*Plotter, error) {
-	var err error
-	if font == nil {
-		font, err = NewFontConfig(nil)
-		if err != nil {
-			return nil, err
-		}
-	}
+func NewPlotter() *Plotter {
 	return &Plotter{
 		panels:     make([]*Panel, 0, 0),
-		font:       font,
+		font:       NewFontConfig(),
 		terminal:   `postscript eps enhanced color`,
 		figname:    `output.eps`,
 		marginsOut: [4]float64{0.1, 0.2, 0.2, 0.1},
 		marginsIn:  [2]float64{0., 0.},
 		row:        1,
 		col:        1,
-	}, nil
+	}
 }
 
 func (plotter *Plotter) SetOutMargins(r, b, l, t float64) {
@@ -56,6 +49,10 @@ func (plotter *Plotter) SetOutMargins(r, b, l, t float64) {
 func (plotter *Plotter) SetInMargins(h, v float64) {
 	plotter.marginsIn[0] = h
 	plotter.marginsIn[1] = v
+}
+
+func (plotter *Plotter) SetFont(font FontConfig) {
+	plotter.font = font
 }
 
 func (plotter *Plotter) getSize() (float64, float64) {
