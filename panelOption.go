@@ -99,6 +99,12 @@ set %slabel "%s" offset %f
 	return s
 }
 
+func (axis *AxisOption) Copy() *AxisOption {
+	axis2 := &AxisOption{}
+	*axis2 = *axis
+	return axis2
+}
+
 /* type PanelOption */
 type PanelOption struct {
 	Xaxis     *AxisOption
@@ -167,4 +173,12 @@ set key %s
 		s += "unset grid\n"
 	}
 	return s
+}
+
+func (opt *PanelOption) Copy() *PanelOption {
+	opt2 := &PanelOption{}
+	*opt2 = *opt
+	opt2.Set(`xaxis`, opt.Xaxis.Copy())
+	opt2.Set(`yaxis`, opt.Yaxis.Copy())
+	return opt2
 }

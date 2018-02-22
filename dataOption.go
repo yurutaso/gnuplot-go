@@ -58,5 +58,5 @@ func (opt *DataOption) Set(key string, value interface{}) error {
 }
 
 func (opt *DataOption) String() string {
-	return fmt.Sprintf(`using %s index %d with %s title "%s" %s`, opt.using, opt.index, opt.with, opt.title, opt.lineStyle)
+	return fmt.Sprintf("using %s index %d with %s title \"%s\" %s\n", opt.using, opt.index, opt.with, opt.title, opt.lineStyle)
 }
