@@ -2,6 +2,7 @@ package goplot
 
 import (
 	"strings"
+	//"encoding/json"
 )
 
 /* type Panel */

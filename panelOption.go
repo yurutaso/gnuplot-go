@@ -8,8 +8,6 @@ import (
 type PanelOption struct {
 	Xaxis     *Axis
 	Yaxis     *Axis
-	showXaxis bool
-	showYaxis bool
 	//zaxis  *Axis
 	sample int
 	grid   string

@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<plotter>
+  <font>
+  </font>
+  <panels>
+    <panel>
+      <axis coord="x">
+        <min>0</min>
+        <max>10</max>
+        <tics>5</tics>
+        <mtics>2</mtics>
+        <format>&amp; g</format>
+        <label>V_{LSR} (km/s)</label>
+        <labelOffset>
+          <x coord="character">0</x>
+          <y coord="character">0</y>
+        </labelOffset>
+        <log>false</log>
+        <show>false</show>
+      </axis>
+      <axis coord="y">
+        <min>0</min>
+        <max>10</max>
+        <tics>5</tics>
+        <mtics>2</mtics>
+        <format>&amp; g</format>
+        <label>T_{MB} (K)</label>
+        <labelOffset>
+          <x coord="character">0</x>
+          <y coord="character">0</y>
+        </labelOffset>
+        <log>false</log>
+        <show>false</show>
+      </axis>
+      <sample>1</sample>
+      <data>
+        <option>
+        </option>
+      </data>
+    </panel>
+  </panels>
+</plotter>
