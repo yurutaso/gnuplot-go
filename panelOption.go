@@ -9,9 +9,9 @@ type PanelOption struct {
 	Xaxis     *Axis
 	Yaxis     *Axis
 	//zaxis  *Axis
-	sample int
-	grid   string
-	key    string
+	Sample int
+	Grid   string
+	Key    string
 }
 
 func NewPanelOption() *PanelOption {
@@ -19,9 +19,9 @@ func NewPanelOption() *PanelOption {
 		Xaxis: NewAxis(`x`),
 		Yaxis: NewAxis(`y`),
 		//Zaxis:  NewAxis(`z`),
-		sample: 1000,
-		grid:   "",
-		key:    "",
+		Sample: 1000,
+		Grid:   "",
+		Key:    "",
 	}
 }
 
@@ -40,11 +40,11 @@ func NewPanelOptionFromMap(values map[string]interface{}) (*PanelOption, error) 
 func (opt *PanelOption) Set(key string, value interface{}) error {
 	switch key {
 	case `grid`:
-		opt.grid = value.(string)
+		opt.Grid = value.(string)
 	case `sample`:
-		opt.sample = value.(int)
+		opt.Sample = value.(int)
 	case `key`:
-		opt.key = value.(string)
+		opt.Key = value.(string)
 	case `xaxis`:
 		opt.Xaxis = value.(*Axis)
 	case `yaxis`:
@@ -62,8 +62,8 @@ func (opt *PanelOption) String() string {
 set sample %d
 set grid %s
 set key %s
-`, opt.Xaxis, opt.Yaxis, opt.sample, opt.grid, opt.key)
-	if len(opt.grid) == 0 {
+`, opt.Xaxis, opt.Yaxis, opt.Sample, opt.Grid, opt.Key)
+	if len(opt.Grid) == 0 {
 		s += "unset grid\n"
 	}
 	return s

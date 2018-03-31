@@ -4,39 +4,40 @@ import (
 	"fmt"
 )
 
+type Coordinate struct {
+	System string `xml:"system,attr"`
+	Value float64 `xml:",chardata"`
+}
+
+func (coord Coordinate) String() string {
+	return fmt.Sprintf("%s %f", coord.System, coord.Value)
+}
+
 type Location struct {
-	systemX string
-	systemY string
-	systemZ string
-	x       float64
-	y       float64
-	z       float64
+	X Coordinate `xml:"x"`
+	Y Coordinate `xml:"y"`
+	Z Coordinate `xml:"z"`
 }
 
-func (loc *Location) String() string {
-	if len(loc.systemZ) == 0 {
-		return fmt.Sprintf("%s %f, %s %f", loc.systemX, loc.x, loc.systemY, loc.y)
+func (loc Location) String() string {
+	if len(loc.Z.System) == 0 {
+		return fmt.Sprintf("%s, %s", loc.X, loc.Y)
 	}
-	return fmt.Sprintf("%s %f, %s %f, %s %f", loc.systemX, loc.x, loc.systemY, loc.y, loc.systemZ, loc.z)
+	return fmt.Sprintf("%s, %s, %s", loc.X, loc.Y, loc.Z)
 }
 
-func NewLocation(system string, x, y float64) *Location {
-	return &Location{
-		systemX: system,
-		systemY: system,
-		x:       x,
-		y:       y,
+func NewLocation(system string, x, y float64) Location {
+	return Location{
+		X: Coordinate{System: system, Value: x},
+		Y: Coordinate{System: system, Value: y},
 	}
 }
 
-func NewLocationXYZ(system string, x, y, z float64) *Location {
-	return &Location{
-		systemX: system,
-		systemY: system,
-		systemZ: system,
-		x:       x,
-		y:       y,
-		z:       z,
+func NewLocationXYZ(system string, x, y, z float64) Location {
+	return Location{
+		X: Coordinate{System: system, Value: x},
+		Y: Coordinate{System: system, Value: y},
+		Z: Coordinate{System: system, Value: z},
 	}
 }
 
@@ -44,8 +45,8 @@ func (loc *Location) SetX(system string, x float64) error {
 	if checkSystem(system) {
 		return fmt.Errorf("Unknown system %s\n", system)
 	}
-	loc.systemX = system
-	loc.x = x
+	loc.X.System = system
+	loc.X.Value = x
 	return nil
 }
 
@@ -53,8 +54,8 @@ func (loc *Location) SetY(system string, y float64) error {
 	if checkSystem(system) {
 		return fmt.Errorf("Unknown system %s\n", system)
 	}
-	loc.systemY = system
-	loc.y = y
+	loc.Y.System = system
+	loc.Y.Value = y
 	return nil
 }
 
@@ -62,8 +63,8 @@ func (loc *Location) SetZ(system string, z float64) error {
 	if checkSystem(system) {
 		return fmt.Errorf("Unknown system %s\n", system)
 	}
-	loc.systemZ = system
-	loc.z = z
+	loc.Z.System = system
+	loc.Z.Value = z
 	return nil
 }
 

@@ -5,31 +5,43 @@ import (
 )
 
 /* type Axis */
+type AxisFormat struct {
+	Format string `xml:",chardata"`
+	Tics float64  `xml:"tics,attr"`
+	Mtics float64 `xml:"mtics,attr"`
+}
+
+type AxisLabel struct {
+	Text string `xml:"text"`
+	Offset Location `xml:"offset"`
+}
+
 type Axis struct {
-	name        string
-	min         float64
-	max         float64
-	tics        float64
-	mtics       float64
-	format      string
-	label       string
-	labelOffset *Location
-	log         bool
-	show        bool
+	Name        string
+	Min         float64 `xml:"min,attr"`
+	Max         float64 `xml:"max,attr"`
+	Log         bool `xml:"log,attr"`
+	ShowLabel   bool `xml:"show,attr"`
+	Format      AxisFormat
+	Label       AxisLabel
 }
 
 func NewAxis(name string) *Axis {
 	return &Axis{
-		name:        name,
-		min:         0,
-		max:         10,
-		tics:        10,
-		mtics:       2,
-		format:      `% g`,
-		label:       "label",
-		labelOffset: NewLocation(`character`, 0., 0.),
-		log:         false,
-		show:        true,
+		Name:        name,
+		Min:         0,
+		Max:         10,
+		Log:         false,
+		ShowLabel:   true,
+		Format:      AxisFormat{
+			Tics: 10,
+			Mtics: 2,
+			Format: `% g`,
+		},
+		Label:       AxisLabel{
+			Text: "label",
+			Offset: NewLocation(`character`, 0., 0.),
+		},
 	}
 }
 
@@ -46,31 +58,31 @@ func NewAxisFromMap(name string, values map[string]interface{}) (*Axis, error) {
 }
 
 func (axis *Axis) Show() {
-	axis.show = true
+	axis.ShowLabel = true
 }
 
 func (axis *Axis) Hide() {
-	axis.show = false
+	axis.ShowLabel = false
 }
 
 func (axis *Axis) Set(key string, value interface{}) error {
 	switch key {
 	case `name`:
-		axis.name = value.(string)
+		axis.Name = value.(string)
 	case `min`:
-		axis.min = value.(float64)
+		axis.Min = value.(float64)
 	case `max`:
-		axis.max = value.(float64)
+		axis.Max = value.(float64)
 	case `tics`:
-		axis.tics = value.(float64)
+		axis.Format.Tics = value.(float64)
 	case `mtics`:
-		axis.mtics = value.(float64)
+		axis.Format.Mtics = value.(float64)
 	case `label`:
-		axis.label = value.(string)
+		axis.Label.Text = value.(string)
 	case `labelOffset`, `labeloffset`:
-		axis.labelOffset = value.(*Location)
+		axis.Label.Offset = value.(Location)
 	case `log`:
-		axis.log = value.(bool)
+		axis.Log = value.(bool)
 	default:
 		return fmt.Errorf(`Unknow key %v`, key)
 	}
@@ -83,22 +95,22 @@ set %srange [%f:%f]
 set %stics %f
 set m%stics %f
 `,
-		axis.name, axis.min, axis.max,
-		axis.name, axis.tics,
-		axis.name, axis.mtics,
+		axis.Name, axis.Min, axis.Max,
+		axis.Name, axis.Format.Tics,
+		axis.Name, axis.Format.Mtics,
 	)
-	if axis.show {
+	if axis.ShowLabel {
 		s += fmt.Sprintf(`set format %s "%s"
 set %slabel "%s" offset %s
 `,
-			axis.name, axis.format,
-			axis.name, axis.label, axis.labelOffset,
+			axis.Name, axis.Format.Format,
+			axis.Name, axis.Label.Text, axis.Label.Offset,
 		)
 	} else {
-		s += fmt.Sprintf("set format %s \"\"\nset %slabel \"\"\n", axis.name, axis.name)
+		s += fmt.Sprintf("set format %s \"\"\nset %slabel \"\"\n", axis.Name, axis.Name)
 	}
-	if axis.log {
-		s += fmt.Sprintf("set log %s\n", axis.name)
+	if axis.Log {
+		s += fmt.Sprintf("set log %s\n", axis.Name)
 	}
 	return s
 }

@@ -6,23 +6,23 @@ import (
 
 /* type PanelDataOption */
 type PanelDataOption struct {
-	isFunc    bool
-	using     string
-	index     int
-	with      string
-	lineStyle *LineStyle
-	title     string
+	IsFunc    bool `xml:"isFunc"`
+	Using     string `xml:"using"`
+	Index     int `xml:"index"`
+	With      string `xml:"with"`
+	LineStyle *LineStyle `xml:"lineStyle"`
+	Title     string `xml:"title"`
 }
 
 func NewPanelDataOption() *PanelDataOption {
 	ls := NewLineStyle()
 	opt := &PanelDataOption{
-		isFunc:    false,
-		using:     "1:2",
-		index:     0,
-		with:      "line",
-		lineStyle: ls,
-		title:     "",
+		IsFunc:    false,
+		Using:     "1:2",
+		Index:     0,
+		With:      "line",
+		LineStyle: ls,
+		Title:     "",
 	}
 	return opt
 }
@@ -42,17 +42,17 @@ func NewPanelDataOptionFromMap(values map[string]interface{}) (*PanelDataOption,
 func (opt *PanelDataOption) Set(key string, value interface{}) error {
 	switch key {
 	case `isfunc`, `isFunc`:
-		opt.isFunc = value.(bool)
+		opt.IsFunc = value.(bool)
 	case `using`, `u`:
-		opt.using = value.(string)
+		opt.Using = value.(string)
 	case `index`, `ind`:
-		opt.index = value.(int)
+		opt.Index = value.(int)
 	case `with`, `w`:
-		opt.with = value.(string)
+		opt.With = value.(string)
 	case `LineStyle`, `lineStyle`, `linestyle`, `ls`:
-		opt.lineStyle = value.(*LineStyle)
+		opt.LineStyle = value.(*LineStyle)
 	case `title`:
-		opt.title = value.(string)
+		opt.Title = value.(string)
 	default:
 		return fmt.Errorf(`Unknown key %v`, key)
 	}
@@ -60,7 +60,7 @@ func (opt *PanelDataOption) Set(key string, value interface{}) error {
 }
 
 func (opt *PanelDataOption) String() string {
-	return fmt.Sprintf("using %s index %d with %s title \"%s\" %s\n", opt.using, opt.index, opt.with, opt.title, opt.lineStyle)
+	return fmt.Sprintf("using %s index %d with %s title \"%s\" %s\n", opt.Using, opt.Index, opt.With, opt.Title, opt.LineStyle)
 }
 
 func (opt *PanelDataOption) Copy() *PanelDataOption {

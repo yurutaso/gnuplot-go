@@ -38,14 +38,14 @@ func main() {
 	panel2.AddData(data2)
 	panel2.AddAnnotation(arrow1)
 
-	plotter := goplot.NewPlotter()
-	defer plotter.Close()
+	fig := goplot.NewFigure()
+	defer fig.Close()
 
-	plotter.AddPanel(panel1)
-	plotter.AddPanel(panel2)
-	plotter.SetLayout(2, 1)
-	plotter.SetInMargins(0., 0.2)
-	plotter.SetOutMargins(0.1, 0.2, 0.1, 0.05)
-	plotter.SetOutput(`output.eps`)
-	plotter.Plot()
+	fig.AddPanel(panel1)
+	fig.AddPanel(panel2)
+	fig.SetLayout(2, 1)
+	fig.SetInMargins(0., 0.2)
+	fig.SetOutMargins(0.1, 0.2, 0.1, 0.05)
+	fig.SetOutput(`output.eps`)
+	fig.Plot()
 }

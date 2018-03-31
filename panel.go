@@ -2,14 +2,16 @@ package goplot
 
 import (
 	"strings"
-	//"encoding/json"
 )
 
 /* type Panel */
 type Panel struct {
 	Data       []*PanelData
 	Opt        *PanelOption
-	Annotation []PanelAnnotation
+	Annotation struct {
+		Labels []*PanelAnnotationLabel `xml:"label"`
+		Arrows []*PanelAnnotationArrow `xml:"arrow"`
+	}
 }
 
 func NewPanel(opt *PanelOption) *Panel {
@@ -25,7 +27,11 @@ func NewPanel(opt *PanelOption) *Panel {
 func (panel *Panel) String() string {
 	s := panel.Opt.String()
 	strs := make([]string, len(panel.Data), len(panel.Data))
-	for i, ann := range panel.Annotation {
+	for i, ann := range panel.Annotation.Labels {
+		ann.SetID(i + 1) // ID must be larger than zero
+		s += ann.String()
+	}
+	for i, ann := range panel.Annotation.Arrows {
 		ann.SetID(i + 1) // ID must be larger than zero
 		s += ann.String()
 	}
@@ -34,7 +40,10 @@ func (panel *Panel) String() string {
 	}
 	s += `plot `
 	s += strings.Join(strs, `,`)
-	for _, ann := range panel.Annotation {
+	for _, ann := range panel.Annotation.Labels {
+		s += ann.Clear()
+	}
+	for _, ann := range panel.Annotation.Arrows {
 		s += ann.Clear()
 	}
 	return s
@@ -48,6 +57,10 @@ func (panel *Panel) AddData(data *PanelData) {
 	panel.Data = append(panel.Data, data)
 }
 
-func (panel *Panel) AddAnnotation(ann PanelAnnotation) {
-	panel.Annotation = append(panel.Annotation, ann)
+func (panel *Panel) AddAnnotationLabel(ann *PanelAnnotationLabel) {
+	panel.Annotation.Labels = append(panel.Annotation.Labels, ann)
+}
+
+func (panel *Panel) AddAnnotationArrow(ann *PanelAnnotationArrow) {
+	panel.Annotation.Arrows = append(panel.Annotation.Arrows, ann)
 }

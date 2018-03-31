@@ -6,22 +6,22 @@ import (
 
 /* type LineStyle */
 type LineStyle struct {
-	lineWidth int
-	lineType  int
-	lineColor string
-	pointType int
-	pointSize int
-	dashType  string
+	LineWidth int `xml:"lw,attr"`
+	LineType  int `xml:"lt,attr"`
+	LineColor string `xml:"lc,attr"`
+	PointType int `xml:"pt,attr"`
+	PointSize int `xml:"ps,attr"`
+	DashType  string `xml:"dt,attr"`
 }
 
 func NewLineStyle() *LineStyle {
 	return &LineStyle{
-		lineWidth: 1,
-		lineType:  1,
-		lineColor: "#000000",
-		pointType: 1,
-		pointSize: 1,
-		dashType:  "",
+		LineWidth: 1,
+		LineType:  1,
+		LineColor: "#000000",
+		PointType: 1,
+		PointSize: 1,
+		DashType:  "",
 	}
 }
 
@@ -39,23 +39,23 @@ func NewLineStyleFromMap(values map[string]interface{}) (*LineStyle, error) {
 
 func (ls *LineStyle) String() string {
 	return fmt.Sprintf(`lw %d lt %d lc rgb "%s" pt %d ps %d dt "%s"`,
-		ls.lineWidth, ls.lineType, ls.lineColor, ls.pointType, ls.pointSize, ls.dashType)
+		ls.LineWidth, ls.LineType, ls.LineColor, ls.PointType, ls.PointSize, ls.DashType)
 }
 
 func (ls *LineStyle) Set(key string, value interface{}) error {
 	switch key {
 	case `LineWidth`, `lineWidth`, `linewidth`, `lw`:
-		ls.lineWidth = value.(int)
+		ls.LineWidth = value.(int)
 	case `LineType`, `lineType`, `linetype`, `lt`:
-		ls.lineType = value.(int)
+		ls.LineType = value.(int)
 	case `LineColor`, `lineColor`, `linecolor`, `lc`:
-		ls.lineColor = value.(string)
+		ls.LineColor = value.(string)
 	case `PointType`, `pointType`, `pointtype`, `pt`:
-		ls.pointType = value.(int)
+		ls.PointType = value.(int)
 	case `PointSize`, `pointSize`, `pointsize`, `ps`:
-		ls.pointSize = value.(int)
+		ls.PointSize = value.(int)
 	case `DashType`, `dashType`, `dashtype`, `dt`:
-		ls.dashType = value.(string)
+		ls.DashType = value.(string)
 	default:
 		return fmt.Errorf("Unknown key %v", value)
 	}

@@ -8,7 +8,7 @@ import (
 
 /* type PanelData */
 type PanelData struct {
-	name   string
+	Name   string
 	Opt    *PanelDataOption
 	atexit func()
 }
@@ -18,7 +18,7 @@ func NewPanelData(name string, opt *PanelDataOption) *PanelData {
 		opt = NewPanelDataOption()
 	}
 	return &PanelData{
-		name:   name,
+		Name:   name,
 		Opt:    opt,
 		atexit: func() { return },
 	}
@@ -65,14 +65,14 @@ func NewPanelDataFromArray(xdata, ydata, zdata []float64, opt *PanelDataOption) 
 }
 
 func (data *PanelData) String() string {
-	if data.Opt.isFunc {
-		return fmt.Sprintf(`%s %s`, data.name, data.Opt)
+	if data.Opt.IsFunc {
+		return fmt.Sprintf(`%s %s`, data.Name, data.Opt)
 	}
-	return fmt.Sprintf(`"%s" %s`, data.name, data.Opt)
+	return fmt.Sprintf(`"%s" %s`, data.Name, data.Opt)
 }
 
 func (data *PanelData) SetData(name string) {
-	data.name = name
+	data.Name = name
 }
 
 func (data *PanelData) SetOption(opt *PanelDataOption) {
