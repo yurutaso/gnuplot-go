@@ -6,6 +6,7 @@ import (
 
 /* type LineStyle */
 type LineStyle struct {
+	Name      string `xml:"name,attr"`
 	LineWidth int `xml:"lw,attr"`
 	LineType  int `xml:"lt,attr"`
 	LineColor string `xml:"lc,attr"`

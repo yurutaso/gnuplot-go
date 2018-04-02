@@ -17,7 +17,8 @@ type AxisLabel struct {
 }
 
 type Axis struct {
-	Name        string
+	Name        string `xml:"name,attr"`
+	Coord       string
 	Min         float64 `xml:"min,attr"`
 	Max         float64 `xml:"max,attr"`
 	Log         bool `xml:"log,attr"`
@@ -26,9 +27,9 @@ type Axis struct {
 	Label       AxisLabel
 }
 
-func NewAxis(name string) *Axis {
+func NewAxis(coord string) *Axis {
 	return &Axis{
-		Name:        name,
+		Coord:        coord,
 		Min:         0,
 		Max:         10,
 		Log:         false,
@@ -36,7 +37,7 @@ func NewAxis(name string) *Axis {
 		Format:      AxisFormat{
 			Tics: 10,
 			Mtics: 2,
-			Format: `% g`,
+			Format: `%g`,
 		},
 		Label:       AxisLabel{
 			Text: "label",
@@ -67,8 +68,8 @@ func (axis *Axis) Hide() {
 
 func (axis *Axis) Set(key string, value interface{}) error {
 	switch key {
-	case `name`:
-		axis.Name = value.(string)
+	case `coord`:
+		axis.Coord = value.(string)
 	case `min`:
 		axis.Min = value.(float64)
 	case `max`:
@@ -95,22 +96,22 @@ set %srange [%f:%f]
 set %stics %f
 set m%stics %f
 `,
-		axis.Name, axis.Min, axis.Max,
-		axis.Name, axis.Format.Tics,
-		axis.Name, axis.Format.Mtics,
+		axis.Coord, axis.Min, axis.Max,
+		axis.Coord, axis.Format.Tics,
+		axis.Coord, axis.Format.Mtics,
 	)
 	if axis.ShowLabel {
 		s += fmt.Sprintf(`set format %s "%s"
 set %slabel "%s" offset %s
 `,
-			axis.Name, axis.Format.Format,
-			axis.Name, axis.Label.Text, axis.Label.Offset,
+			axis.Coord, axis.Format.Format,
+			axis.Coord, axis.Label.Text, axis.Label.Offset,
 		)
 	} else {
-		s += fmt.Sprintf("set format %s \"\"\nset %slabel \"\"\n", axis.Name, axis.Name)
+		s += fmt.Sprintf("set format %s \"\"\nset %slabel \"\"\n", axis.Coord, axis.Coord)
 	}
 	if axis.Log {
-		s += fmt.Sprintf("set log %s\n", axis.Name)
+		s += fmt.Sprintf("set log %s\n", axis.Coord)
 	}
 	return s
 }

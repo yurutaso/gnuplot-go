@@ -4,27 +4,74 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
+	"strconv"
 )
 
-/* type PanelData */
-type PanelData struct {
-	Name   string
-	Opt    *PanelDataOption
+/* type Function */
+type Function struct {
+	Name string `xml:"name,attr"`
+	Text string `xml:",chardata"`
+	Para []float64 `xml:"para,attr"`
+}
+
+func (f *Function) String() string {
+	form := f.Text
+	for i, p := range f.Para {
+		form = strings.Replace(form, "$"+strconv.Itoa(i), fmt.Sprintf("%f", p), -1)
+	}
+	return fmt.Sprintf("%s", form)
+}
+
+/* type PanelFunction */
+type PanelFunction struct {
+	Function   *Function `xml:"Func"`
+	Opt    *PlotOption
 	atexit func()
 }
 
-func NewPanelData(name string, opt *PanelDataOption) *PanelData {
+func NewPanelFunction(f *Function, opt *PlotOption) *PanelFunction {
 	if opt == nil {
-		opt = NewPanelDataOption()
+		opt = NewPlotOption()
 	}
-	return &PanelData{
-		Name:   name,
+	return &PanelFunction{
+		Function:   f,
 		Opt:    opt,
 		atexit: func() { return },
 	}
 }
 
-func NewPanelDataFromArray(xdata, ydata, zdata []float64, opt *PanelDataOption) (*PanelData, error) {
+func (data *PanelFunction) String() string {
+	return fmt.Sprintf("%s with %s title \"%s\" %s\n", data.Function, data.Opt.With, data.Opt.Title, data.Opt.LineStyle)
+}
+
+func (data *PanelFunction) SetFunction(f *Function) {
+	data.Function = f
+}
+
+func (data *PanelFunction) SetOption(opt *PlotOption) {
+	data.Opt = opt
+}
+
+/* type PanelData */
+type PanelData struct {
+	FileName   string `xml:""`
+	Opt    *PlotOption
+	atexit func()
+}
+
+func NewPanelData(name string, opt *PlotOption) *PanelData {
+	if opt == nil {
+		opt = NewPlotOption()
+	}
+	return &PanelData{
+		FileName:   name,
+		Opt:    opt,
+		atexit: func() { return },
+	}
+}
+
+func NewPanelDataFromArray(xdata, ydata, zdata []float64, opt *PlotOption) (*PanelData, error) {
 	/* Generate tempfile to load data from gnuplot */
 	tmpfile, err := ioutil.TempFile("", "goplot")
 	if err != nil {
@@ -65,16 +112,71 @@ func NewPanelDataFromArray(xdata, ydata, zdata []float64, opt *PanelDataOption) 
 }
 
 func (data *PanelData) String() string {
-	if data.Opt.IsFunc {
-		return fmt.Sprintf(`%s %s`, data.Name, data.Opt)
-	}
-	return fmt.Sprintf(`"%s" %s`, data.Name, data.Opt)
+	return fmt.Sprintf("\"%s\" using %s index %d with %s title \"%s\" %s", data.FileName, data.Opt.Using, data.Opt.Index, data.Opt.With, data.Opt.Title, data.Opt.LineStyle)
 }
 
 func (data *PanelData) SetData(name string) {
-	data.Name = name
+	data.FileName = name
 }
 
-func (data *PanelData) SetOption(opt *PanelDataOption) {
+func (data *PanelData) SetOption(opt *PlotOption) {
 	data.Opt = opt
+}
+
+/* type PlotOption */
+type PlotOption struct {
+	Name      string `xml:"name,attr"`
+	Using     string `xml:"using"`
+	Index     int `xml:"index"`
+	With      string `xml:"with"`
+	LineStyle *LineStyle
+	Title     string `xml:"title"`
+}
+
+func NewPlotOption() *PlotOption {
+	ls := NewLineStyle()
+	opt := &PlotOption{
+		Using:     "1:2",
+		Index:     0,
+		With:      "line",
+		LineStyle: ls,
+		Title:     "",
+	}
+	return opt
+}
+
+func NewPlotOptionFromMap(values map[string]interface{}) (*PlotOption, error) {
+	opt := NewPlotOption()
+	if values != nil {
+		for key, value := range values {
+			if err := opt.Set(key, value); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return opt, nil
+}
+
+func (opt *PlotOption) Set(key string, value interface{}) error {
+	switch key {
+	case `using`, `u`:
+		opt.Using = value.(string)
+	case `index`, `ind`:
+		opt.Index = value.(int)
+	case `with`, `w`:
+		opt.With = value.(string)
+	case `LineStyle`, `lineStyle`, `linestyle`, `ls`:
+		opt.LineStyle = value.(*LineStyle)
+	case `title`:
+		opt.Title = value.(string)
+	default:
+		return fmt.Errorf(`Unknown key %v`, key)
+	}
+	return nil
+}
+
+func (opt *PlotOption) Copy() *PlotOption {
+	opt2 := &PlotOption{}
+	*opt2 = *opt
+	return opt2
 }

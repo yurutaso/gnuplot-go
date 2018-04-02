@@ -6,9 +6,8 @@ import (
 )
 
 func main() {
-	fig, err := goplot.GetFigureFromXML(`style.xml`)
+	err := goplot.ReadXML(`style.xml`)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fig.Plot()
 }

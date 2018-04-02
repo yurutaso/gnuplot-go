@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<Template>
+  <Fonts>
+    <Font name="Helvetica" size="16">xlabel</Font>
+    <Font name="Helvetica" size="16">ylabel</Font>
+    <Font name="Helvetica" size="16">title</Font>
+    <Font name="Helvetica" size="12">xtics</Font>
+    <Font name="Helvetica" size="12">ytics</Font>
+    <Font name="Helvetica" size="12">key</Font>
+  </Fonts>
+  <Functions>
+    <Function name="f">$1*x + $2</Function>
+    <Function name="g">$1*exp(-4*log(2)*((x-$2)/$3)**2)</Function>
+  </Functions>
+  <LineStyles>
+    <LineStyle name="black" lw="1" bt="1" lc="#000000" pt="" ps="" dt=""></LineStyle>
+    <LineStyle name="red" lw="1" lt="1" lc="#FF0000" pt="" ps="" dt=""></LineStyle>
+    <LineStyle name="blue" lw="1" lt="1" lc="#0000FF" pt="" ps="" dt=""></LineStyle>
+  </LineStyles>
+  <Axes>
+    <Axis name="xaxis_default" show="true" min="0" max="10" log="false">
+      <Coord>x</Coord>
+      <Format tics="5" mtics="2">%g</Format>
+      <Label>
+        <text>V_{LSR} (km/s)</text>
+        <offset>
+          <x system="character">0</x>
+          <y system="character">0</y>
+        </offset>
+      </Label>
+    </Axis>
+    <Axis name="yaxis_default" show="true" min="0" max="10" log="false">
+      <Coord>y</Coord>
+      <Format tics="5" mtics="2">%g</Format>
+      <Label>
+        <text>T_{MB} (K)</text>
+        <offset>
+          <x system="character">0</x>
+          <y system="character">0</y>
+        </offset>
+      </Label>
+    </Axis>
+  </Axes>
+  <PanelOptions>
+    <PanelOption name="default">
+      <Sample>1000</Sample>
+      <Grid></Grid>
+      <Key></Key>
+    </PanelOption>
+  </PanelOptions>
+  <PlotOptions>
+    <PlotOption name="default">
+      <using>1:2</using>
+      <index>0</index>
+      <with>line</with>
+      <LineStyle name="ls1"></LineStyle>
+      <title></title>
+    </PlotOption>
+  </PlotOptions>
+  <Annotation>
+    <arrow name="arrow1" hideHead="true">
+      <LineStyle lw="1" lt="1" lc="#000000" pt="" ps="" dt=""></LineStyle>
+      <from>
+        <x system="graph">0.5</x>
+        <y system="graph">0.0</y>
+      </from>
+      <to>
+        <x system="graph">0.5</x>
+        <y system="graph">1.0</y>
+      </to>
+    </arrow>
+    <label name="label1">
+      <text>label</text>
+      <location>
+        <x system="graph">0.5</x>
+        <y system="graph">0.5</y>
+      </location>
+    </label>
+  </Annotation>
+</Template>

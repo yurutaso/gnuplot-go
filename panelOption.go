@@ -6,9 +6,7 @@ import (
 
 /* type PanelOption */
 type PanelOption struct {
-	Xaxis     *Axis
-	Yaxis     *Axis
-	//zaxis  *Axis
+	Name string `xml:"name,attr"`
 	Sample int
 	Grid   string
 	Key    string
@@ -16,9 +14,6 @@ type PanelOption struct {
 
 func NewPanelOption() *PanelOption {
 	return &PanelOption{
-		Xaxis: NewAxis(`x`),
-		Yaxis: NewAxis(`y`),
-		//Zaxis:  NewAxis(`z`),
 		Sample: 1000,
 		Grid:   "",
 		Key:    "",
@@ -45,10 +40,6 @@ func (opt *PanelOption) Set(key string, value interface{}) error {
 		opt.Sample = value.(int)
 	case `key`:
 		opt.Key = value.(string)
-	case `xaxis`:
-		opt.Xaxis = value.(*Axis)
-	case `yaxis`:
-		opt.Yaxis = value.(*Axis)
 	default:
 		return fmt.Errorf(`Unknown key %v`, key)
 	}
@@ -56,13 +47,7 @@ func (opt *PanelOption) Set(key string, value interface{}) error {
 }
 
 func (opt *PanelOption) String() string {
-	s := fmt.Sprintf(`
-%s
-%s
-set sample %d
-set grid %s
-set key %s
-`, opt.Xaxis, opt.Yaxis, opt.Sample, opt.Grid, opt.Key)
+	s := fmt.Sprintf("set sample %d\nset grid %s\nset key %s", opt.Sample, opt.Grid, opt.Key)
 	if len(opt.Grid) == 0 {
 		s += "unset grid\n"
 	}
@@ -72,7 +57,5 @@ set key %s
 func (opt *PanelOption) Copy() *PanelOption {
 	opt2 := &PanelOption{}
 	*opt2 = *opt
-	opt2.Set(`xaxis`, opt.Xaxis.Copy())
-	opt2.Set(`yaxis`, opt.Yaxis.Copy())
 	return opt2
 }

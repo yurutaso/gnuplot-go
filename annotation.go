@@ -4,38 +4,34 @@ import (
 	"fmt"
 )
 
-type PanelAnnotation interface {
-	String() string
-	Clear() string
-	SetID(int)
-}
-
-type PanelAnnotationLabel struct {
+type AnnotationLabel struct {
+	Name    string `xml:"name,attr"`
 	ID      int `xml:"id,attr"` // No need to set ID by yourself
 	Label    string `xml:"text"`
 	Location Location `xml:"location"`
 }
 
-func (ann *PanelAnnotationLabel) String() string {
+func (ann *AnnotationLabel) String() string {
 	return fmt.Sprintf("set label %d \"%s\" at %s\n", ann.ID, ann.Label, ann.Location)
 }
 
-func (ann *PanelAnnotationLabel) Clear() string {
+func (ann *AnnotationLabel) Clear() string {
 	return fmt.Sprintf("unset label %d\n", ann.ID)
 }
 
-func (ann *PanelAnnotationLabel) SetID(num int) {
+func (ann *AnnotationLabel) SetID(num int) {
 	ann.ID = num
 }
 
-func NewAnnotationLabel(num int, label string, loc Location) *PanelAnnotationLabel {
-	return &PanelAnnotationLabel{
+func NewAnnotationLabel(num int, label string, loc Location) *AnnotationLabel {
+	return &AnnotationLabel{
 		Label:    label,
 		Location: loc,
 	}
 }
 
-type PanelAnnotationArrow struct {
+type AnnotationArrow struct {
+	Name     string `xml:"name,attr"`
 	ID       int `xml:"id,attr"` // No need to set ID by yourself
 	HideHead  bool `xml:"hideHead,attr"`
 	LineStyle *LineStyle `xml:"lineStyle"`
@@ -43,8 +39,8 @@ type PanelAnnotationArrow struct {
 	Location2 Location `xml:"to"`
 }
 
-func NewAnnotationArrow(num int, loc1, loc2 Location, ls *LineStyle) *PanelAnnotationArrow {
-	return &PanelAnnotationArrow{
+func NewAnnotationArrow(num int, loc1, loc2 Location, ls *LineStyle) *AnnotationArrow {
+	return &AnnotationArrow{
 		HideHead:  false,
 		Location1: loc1,
 		Location2: loc2,
@@ -52,7 +48,7 @@ func NewAnnotationArrow(num int, loc1, loc2 Location, ls *LineStyle) *PanelAnnot
 	}
 }
 
-func (ann *PanelAnnotationArrow) String() string {
+func (ann *AnnotationArrow) String() string {
 	sls := ""
 	if ann.LineStyle != nil {
 		sls = ann.LineStyle.String()
@@ -64,18 +60,18 @@ func (ann *PanelAnnotationArrow) String() string {
 	return fmt.Sprintf("set arrow %d from %s to %s nohead %s\n", ann.ID, ann.Location1, ann.Location2, sls)
 }
 
-func (ann *PanelAnnotationArrow) NoHead() {
+func (ann *AnnotationArrow) NoHead() {
 	ann.HideHead = true
 }
 
-func (ann *PanelAnnotationArrow) ShowHead() {
+func (ann *AnnotationArrow) ShowHead() {
 	ann.HideHead = false
 }
 
-func (ann *PanelAnnotationArrow) Clear() string {
+func (ann *AnnotationArrow) Clear() string {
 	return fmt.Sprintf("unset arrow %d\n", ann.ID)
 }
 
-func (ann *PanelAnnotationArrow) SetID(num int) {
+func (ann *AnnotationArrow) SetID(num int) {
 	ann.ID = num
 }
