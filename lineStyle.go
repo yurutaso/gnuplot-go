@@ -2,61 +2,77 @@ package goplot
 
 import (
 	"fmt"
+	"strings"
 )
 
 /* type LineStyle */
 type LineStyle struct {
-	Name      string `xml:"name,attr"`
-	LineWidth int `xml:"lw,attr"`
-	LineType  int `xml:"lt,attr"`
-	LineColor string `xml:"lc,attr"`
-	PointType int `xml:"pt,attr"`
-	PointSize int `xml:"ps,attr"`
-	DashType  string `xml:"dt,attr"`
+	Name      string  `xml:"name,attr"`
+	LineWidth *int    `xml:"lw,attr"`
+	LineType  *int    `xml:"lt,attr"`
+	LineColor *string `xml:"lc,attr"`
+	PointType *int    `xml:"pt,attr"`
+	PointSize *int    `xml:"ps,attr"`
+	DashType  *string `xml:"dt,attr"`
 }
 
 func NewLineStyle() *LineStyle {
+	lw := 1
+	lt := 1
+	lc := "#000000"
+	pt := 1
+	ps := 1
+	dt := ""
 	return &LineStyle{
-		LineWidth: 1,
-		LineType:  1,
-		LineColor: "#000000",
-		PointType: 1,
-		PointSize: 1,
-		DashType:  "",
+		LineWidth: &lw,
+		LineType:  &lt,
+		LineColor: &lc,
+		PointType: &pt,
+		PointSize: &ps,
+		DashType:  &dt,
 	}
 }
 
-func NewLineStyleFromMap(values map[string]interface{}) (*LineStyle, error) {
-	ls := NewLineStyle()
-	if values != nil {
-		for key, value := range values {
-			if err := ls.Set(key, value); err != nil {
-				return nil, err
-			}
-		}
+func (ls *LineStyle) Apply(new *LineStyle) {
+	if ls.LineWidth == nil {
+		ls.LineWidth = new.LineWidth
 	}
-	return ls, nil
+	if ls.LineType == nil {
+		ls.LineType = new.LineType
+	}
+	if ls.LineColor == nil {
+		ls.LineColor = new.LineColor
+	}
+	if ls.PointType == nil {
+		ls.PointType = new.PointType
+	}
+	if ls.PointSize == nil {
+		ls.PointSize = new.PointSize
+	}
+	if ls.DashType == nil {
+		ls.DashType = new.DashType
+	}
 }
 
 func (ls *LineStyle) String() string {
 	return fmt.Sprintf(`lw %d lt %d lc rgb "%s" pt %d ps %d dt "%s"`,
-		ls.LineWidth, ls.LineType, ls.LineColor, ls.PointType, ls.PointSize, ls.DashType)
+		*ls.LineWidth, *ls.LineType, *ls.LineColor, *ls.PointType, *ls.PointSize, *ls.DashType)
 }
 
 func (ls *LineStyle) Set(key string, value interface{}) error {
-	switch key {
-	case `LineWidth`, `lineWidth`, `linewidth`, `lw`:
-		ls.LineWidth = value.(int)
-	case `LineType`, `lineType`, `linetype`, `lt`:
-		ls.LineType = value.(int)
-	case `LineColor`, `lineColor`, `linecolor`, `lc`:
-		ls.LineColor = value.(string)
-	case `PointType`, `pointType`, `pointtype`, `pt`:
-		ls.PointType = value.(int)
-	case `PointSize`, `pointSize`, `pointsize`, `ps`:
-		ls.PointSize = value.(int)
-	case `DashType`, `dashType`, `dashtype`, `dt`:
-		ls.DashType = value.(string)
+	switch strings.ToLower(key) {
+	case `linewidth`, `lw`:
+		ls.LineWidth = value.(*int)
+	case `linetype`, `lt`:
+		ls.LineType = value.(*int)
+	case `linecolor`, `lc`:
+		ls.LineColor = value.(*string)
+	case `pointtype`, `pt`:
+		ls.PointType = value.(*int)
+	case `pointsize`, `ps`:
+		ls.PointSize = value.(*int)
+	case `dashtype`, `dt`:
+		ls.DashType = value.(*string)
 	default:
 		return fmt.Errorf("Unknown key %v", value)
 	}

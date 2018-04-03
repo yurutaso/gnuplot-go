@@ -6,40 +6,44 @@ import (
 
 /* type PanelOption */
 type PanelOption struct {
-	Name string `xml:"name,attr"`
-	Sample int
-	Grid   string
-	Key    string
+	Name   string `xml:"name,attr"`
+	Sample *int
+	Grid   *string
+	Key    *string
 }
 
 func NewPanelOption() *PanelOption {
+	sample := 1000
+	grid := ""
+	key := ""
 	return &PanelOption{
-		Sample: 1000,
-		Grid:   "",
-		Key:    "",
+		Sample: &sample,
+		Grid:   &grid,
+		Key:    &key,
 	}
 }
 
-func NewPanelOptionFromMap(values map[string]interface{}) (*PanelOption, error) {
-	opt := NewPanelOption()
-	if values != nil {
-		for key, value := range values {
-			if err := opt.Set(key, value); err != nil {
-				return nil, err
-			}
-		}
+func (opt *PanelOption) Apply(new *PanelOption) {
+	// Apply new panelOption if the old is not nil
+	if opt.Sample == nil {
+		opt.Sample = new.Sample
 	}
-	return opt, nil
+	if opt.Grid == nil {
+		opt.Grid = new.Grid
+	}
+	if opt.Key == nil {
+		opt.Key = new.Key
+	}
 }
 
 func (opt *PanelOption) Set(key string, value interface{}) error {
 	switch key {
 	case `grid`:
-		opt.Grid = value.(string)
+		opt.Grid = value.(*string)
 	case `sample`:
-		opt.Sample = value.(int)
+		opt.Sample = value.(*int)
 	case `key`:
-		opt.Key = value.(string)
+		opt.Key = value.(*string)
 	default:
 		return fmt.Errorf(`Unknown key %v`, key)
 	}
@@ -47,8 +51,8 @@ func (opt *PanelOption) Set(key string, value interface{}) error {
 }
 
 func (opt *PanelOption) String() string {
-	s := fmt.Sprintf("set sample %d\nset grid %s\nset key %s", opt.Sample, opt.Grid, opt.Key)
-	if len(opt.Grid) == 0 {
+	s := fmt.Sprintf("set sample %d\nset grid %s\nset key %s\n", *opt.Sample, *opt.Grid, *opt.Key)
+	if len(*opt.Grid) == 0 {
 		s += "unset grid\n"
 	}
 	return s

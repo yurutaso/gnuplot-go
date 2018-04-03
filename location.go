@@ -5,8 +5,8 @@ import (
 )
 
 type Coordinate struct {
-	System string `xml:"system,attr"`
-	Value float64 `xml:",chardata"`
+	System string  `xml:"system,attr"`
+	Value  float64 `xml:",chardata"`
 }
 
 func (coord Coordinate) String() string {

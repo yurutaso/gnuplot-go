@@ -4,30 +4,39 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 /* type Function */
 type Function struct {
-	Name string `xml:"name,attr"`
-	Text string `xml:",chardata"`
+	Name string    `xml:"name,attr"`
+	Text *string   `xml:",chardata"`
 	Para []float64 `xml:"para,attr"`
 }
 
 func (f *Function) String() string {
-	form := f.Text
+	form := *f.Text
 	for i, p := range f.Para {
-		form = strings.Replace(form, "$"+strconv.Itoa(i), fmt.Sprintf("%f", p), -1)
+		form = strings.Replace(form, "$"+strconv.Itoa(i+1), fmt.Sprintf("%f", p), -1)
 	}
 	return fmt.Sprintf("%s", form)
 }
 
+func (f *Function) Apply(new *Function) {
+	if f.Text == nil || len(*f.Text) == 0 {
+		f.Text = new.Text
+	}
+	if f.Para == nil {
+		f.Para = new.Para
+	}
+}
+
 /* type PanelFunction */
 type PanelFunction struct {
-	Function   *Function `xml:"Func"`
-	Opt    *PlotOption
-	atexit func()
+	Function *Function `xml:"Func"`
+	Opt      *PlotOption
+	atexit   func()
 }
 
 func NewPanelFunction(f *Function, opt *PlotOption) *PanelFunction {
@@ -35,14 +44,14 @@ func NewPanelFunction(f *Function, opt *PlotOption) *PanelFunction {
 		opt = NewPlotOption()
 	}
 	return &PanelFunction{
-		Function:   f,
-		Opt:    opt,
-		atexit: func() { return },
+		Function: f,
+		Opt:      opt,
+		atexit:   func() { return },
 	}
 }
 
 func (data *PanelFunction) String() string {
-	return fmt.Sprintf("%s with %s title \"%s\" %s\n", data.Function, data.Opt.With, data.Opt.Title, data.Opt.LineStyle)
+	return fmt.Sprintf("%s with %s title \"%s\" %s\n", data.Function, *data.Opt.With, *data.Opt.Title, data.Opt.LineStyle)
 }
 
 func (data *PanelFunction) SetFunction(f *Function) {
@@ -55,9 +64,9 @@ func (data *PanelFunction) SetOption(opt *PlotOption) {
 
 /* type PanelData */
 type PanelData struct {
-	FileName   string `xml:""`
-	Opt    *PlotOption
-	atexit func()
+	FileName string `xml:""`
+	Opt      *PlotOption
+	atexit   func()
 }
 
 func NewPanelData(name string, opt *PlotOption) *PanelData {
@@ -65,9 +74,9 @@ func NewPanelData(name string, opt *PlotOption) *PanelData {
 		opt = NewPlotOption()
 	}
 	return &PanelData{
-		FileName:   name,
-		Opt:    opt,
-		atexit: func() { return },
+		FileName: name,
+		Opt:      opt,
+		atexit:   func() { return },
 	}
 }
 
@@ -112,7 +121,7 @@ func NewPanelDataFromArray(xdata, ydata, zdata []float64, opt *PlotOption) (*Pan
 }
 
 func (data *PanelData) String() string {
-	return fmt.Sprintf("\"%s\" using %s index %d with %s title \"%s\" %s", data.FileName, data.Opt.Using, data.Opt.Index, data.Opt.With, data.Opt.Title, data.Opt.LineStyle)
+	return fmt.Sprintf("\"%s\" using %s index %d with %s title \"%s\" %s", data.FileName, *data.Opt.Using, *data.Opt.Index, *data.Opt.With, *data.Opt.Title, data.Opt.LineStyle)
 }
 
 func (data *PanelData) SetData(name string) {
@@ -125,50 +134,60 @@ func (data *PanelData) SetOption(opt *PlotOption) {
 
 /* type PlotOption */
 type PlotOption struct {
-	Name      string `xml:"name,attr"`
-	Using     string `xml:"using"`
-	Index     int `xml:"index"`
-	With      string `xml:"with"`
+	Name      string  `xml:"name,attr"`
+	Using     *string `xml:"using"`
+	Index     *int    `xml:"index"`
+	With      *string `xml:"with"`
 	LineStyle *LineStyle
-	Title     string `xml:"title"`
+	Title     *string `xml:"title"`
 }
 
 func NewPlotOption() *PlotOption {
 	ls := NewLineStyle()
+	u := "1:2"
+	i := 0
+	w := "line"
+	title := ""
 	opt := &PlotOption{
-		Using:     "1:2",
-		Index:     0,
-		With:      "line",
+		Using:     &u,
+		Index:     &i,
+		With:      &w,
 		LineStyle: ls,
-		Title:     "",
+		Title:     &title,
 	}
 	return opt
 }
 
-func NewPlotOptionFromMap(values map[string]interface{}) (*PlotOption, error) {
-	opt := NewPlotOption()
-	if values != nil {
-		for key, value := range values {
-			if err := opt.Set(key, value); err != nil {
-				return nil, err
-			}
-		}
+func (opt *PlotOption) Apply(new *PlotOption) {
+	if opt.Using == nil {
+		opt.Using = new.Using
 	}
-	return opt, nil
+	if opt.Index == nil {
+		opt.Index = new.Index
+	}
+	if opt.With == nil {
+		opt.With = new.With
+	}
+	if opt.LineStyle == nil {
+		opt.LineStyle = new.LineStyle
+	}
+	if opt.Title == nil {
+		opt.Title = new.Title
+	}
 }
 
 func (opt *PlotOption) Set(key string, value interface{}) error {
 	switch key {
 	case `using`, `u`:
-		opt.Using = value.(string)
+		opt.Using = value.(*string)
 	case `index`, `ind`:
-		opt.Index = value.(int)
+		opt.Index = value.(*int)
 	case `with`, `w`:
-		opt.With = value.(string)
+		opt.With = value.(*string)
 	case `LineStyle`, `lineStyle`, `linestyle`, `ls`:
 		opt.LineStyle = value.(*LineStyle)
 	case `title`:
-		opt.Title = value.(string)
+		opt.Title = value.(*string)
 	default:
 		return fmt.Errorf(`Unknown key %v`, key)
 	}

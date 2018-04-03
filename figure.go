@@ -17,13 +17,14 @@ Layers:
 */
 
 type Figure struct {
-	Panels     []*Panel `xml:"Panels>Panel"`
-	Fonts      []*Font `xml:"Fonts>Font"`
-	Terminal   string
-	Figname    string `xml:"Name"`
-	Margins    *Margin
-	Row        int
-	Col        int
+	Panels   []*Panel `xml:"Panels>Panel"`
+	Fonts    []*Font  `xml:"Fonts>Font"`
+	Terminal string
+	Figname  string `xml:"Name"`
+	Margins  *Margin
+	Row      int
+	Col      int
+	Aspect   float64 // y/x
 }
 
 func (fig *Figure) IsFontSet(field string) bool {
@@ -42,10 +43,18 @@ func (fig *Figure) ApplyTemplate(template *XMLTemplate) error {
 		}
 	}
 	for _, panel := range fig.Panels {
+		// Option
+		if panel.Opt.Name != "" {
+			if opt, found := template.Find(`paneloption`, panel.Opt.Name); found {
+				panel.Opt.Apply(opt.(*PanelOption))
+			} else {
+				return fmt.Errorf("PantlOption named %s not found in the template file\n", panel.Opt.Name)
+			}
+		}
 		// Xaxis
 		if panel.Xaxis.Name != "" {
 			if axis, found := template.Find(`axis`, panel.Xaxis.Name); found {
-				panel.Xaxis = axis.(*Axis)
+				panel.Xaxis.Apply(axis.(*Axis))
 			} else {
 				return fmt.Errorf("Axis named %s not found in the template file\n", panel.Xaxis.Name)
 			}
@@ -53,35 +62,64 @@ func (fig *Figure) ApplyTemplate(template *XMLTemplate) error {
 		// Yaxis
 		if panel.Yaxis.Name != "" {
 			if axis, found := template.Find(`axis`, panel.Yaxis.Name); found {
-				panel.Yaxis = axis.(*Axis)
+				panel.Yaxis.Apply(axis.(*Axis))
 			} else {
 				return fmt.Errorf("Axis named %s not found in the template file\n", panel.Yaxis.Name)
 			}
 		}
+		// Annotation
+		for i, label := range panel.Annotation.Labels {
+			if l, found := template.Find(`label`, label.Name); found {
+				panel.Annotation.Labels[i].Apply(l.(*AnnotationLabel))
+			} else {
+				return fmt.Errorf("AnnotationLabel named %s not found in the template file\n", label.Name)
+			}
+		}
+		for i, arrow := range panel.Annotation.Arrows {
+			if l, found := template.Find(`arrow`, arrow.Name); found {
+				panel.Annotation.Arrows[i].Apply(l.(*AnnotationArrow))
+			} else {
+				return fmt.Errorf("AnnotationArrow named %s not found in the template file\n", arrow.Name)
+			}
+		}
 		// Data
 		for i, data := range panel.Plot.Data {
-			if data.Opt != nil && data.Opt.Name != "" {
-				if opt, found := template.Find(`plotOption`, data.Opt.Name); found {
-					panel.Plot.Data[i].Opt = opt.(*PlotOption)
-				} else {
-					return fmt.Errorf("PlotOption named %s not found in the template file\n", data.Opt.Name)
+			if data.Opt != nil {
+				if data.Opt.Name != "" {
+					if opt, found := template.Find(`plotOption`, data.Opt.Name); found {
+						panel.Plot.Data[i].Opt.Apply(opt.(*PlotOption))
+					} else {
+						return fmt.Errorf("PlotOption named %s not found in the template file\n", data.Opt.Name)
+					}
+				}
+				if data.Opt.LineStyle != nil && data.Opt.LineStyle.Name != "" {
+					if ls, found := template.Find(`linestyle`, data.Opt.LineStyle.Name); found {
+						panel.Plot.Data[i].Opt.LineStyle.Apply(ls.(*LineStyle))
+					} else {
+						return fmt.Errorf("LineStyle named %s not found in the template file\n", data.Opt.LineStyle.Name)
+					}
 				}
 			}
 		}
 		// Function
 		for i, data := range panel.Plot.Func {
-			if data.Opt != nil && data.Opt.Name != "" {
-				if opt, found := template.Find(`plotOption`, data.Opt.Name); found {
-					panel.Plot.Func[i].Opt = opt.(*PlotOption)
-				} else {
-					return fmt.Errorf("PlotOption named %s not found in the template file\n", data.Opt.Name)
-				}
+			if f, found := template.Find(`function`, data.Function.Name); found {
+				panel.Plot.Func[i].Function.Apply(f.(*Function))
 			}
-			if data.Function != nil && data.Function.Name != "" {
-				if f, found := template.Find(`function`, data.Function.Name); found {
-					panel.Plot.Func[i].Function = f.(*Function)
-				} else {
-					return fmt.Errorf("Function named %s not found in the template file\n", data.Function.Name)
+			if data.Opt != nil {
+				if data.Opt.Name != "" {
+					if opt, found := template.Find(`plotOption`, data.Opt.Name); found {
+						panel.Plot.Func[i].Opt.Apply(opt.(*PlotOption))
+					} else {
+						return fmt.Errorf("PlotOption named %s not found in the template file\n", data.Opt.Name)
+					}
+				}
+				if data.Opt.LineStyle != nil && data.Opt.LineStyle.Name != "" {
+					if ls, found := template.Find(`linestyle`, data.Opt.LineStyle.Name); found {
+						panel.Plot.Func[i].Opt.LineStyle.Apply(ls.(*LineStyle))
+					} else {
+						return fmt.Errorf("LineStyle named %s not found in the template file\n", data.Opt.LineStyle.Name)
+					}
 				}
 			}
 		}
@@ -90,33 +128,33 @@ func (fig *Figure) ApplyTemplate(template *XMLTemplate) error {
 }
 
 type Margin struct {
-	Right float64 `xml:"right,attr"`
-	Left float64 `xml:"left,attr"`
-	Top float64 `xml:"top,attr"`
-	Bottom float64 `xml:"bottom,attr"`
+	Right      float64 `xml:"right,attr"`
+	Left       float64 `xml:"left,attr"`
+	Top        float64 `xml:"top,attr"`
+	Bottom     float64 `xml:"bottom,attr"`
 	Horizontal float64 `xml:"h,attr"`
-	Vertical float64 `xml:"v,attr"`
+	Vertical   float64 `xml:"v,attr"`
 }
 
 func NewFigure() *Figure {
 	return &Figure{
-		Panels:     make([]*Panel, 0, 0),
-		Fonts:       make([]*Font, 0, 0),
-		Terminal:   `postscript eps enhanced color`,
-		Figname:    `output.eps`,
+		Panels:   make([]*Panel, 0, 0),
+		Fonts:    make([]*Font, 0, 0),
+		Terminal: `postscript eps enhanced color`,
+		Figname:  `output.eps`,
 		Margins: &Margin{
-			Right: 0.1,
-			Bottom: 0.2,
-			Left: 0.2,
-			Top: 0.1,
+			Right:      0.1,
+			Bottom:     0.2,
+			Left:       0.2,
+			Top:        0.1,
 			Horizontal: 0.,
-			Vertical: 0.,
+			Vertical:   0.,
 		},
-		Row:        1,
-		Col:        1,
+		Row:    1,
+		Col:    1,
+		Aspect: 2. / 3.,
 	}
 }
-
 
 func (fig *Figure) SetOutMargins(r, b, l, t float64) {
 	fig.Margins.Right = r
@@ -161,6 +199,12 @@ func (fig *Figure) SetLayout(col, row int) error {
 	return nil
 }
 
+func (fig *Figure) getTermSize() (float64, float64) {
+	x := 6. * (float64(fig.Row) + fig.Margins.Left + fig.Margins.Right)
+	y := fig.Aspect * 6. * (float64(fig.Col) + fig.Margins.Top + fig.Margins.Bottom)
+	return x, y
+}
+
 func (fig *Figure) String() string {
 	xsize, ysize := fig.getSize()
 
@@ -168,14 +212,15 @@ func (fig *Figure) String() string {
 	for _, font := range fig.Fonts {
 		s += fmt.Sprintf("%s\n", font)
 	}
+	x, y := fig.getTermSize()
 	s += fmt.Sprintf(`set bmargin 0
 set tmargin 0
 set lmargin 0
 set rmargin 0
-set terminal %s
+set terminal %s size %fcm, %fcm
 set output "%s"
 `,
-		fig.Terminal,
+		fig.Terminal, x, y,
 		fig.Figname,
 	)
 

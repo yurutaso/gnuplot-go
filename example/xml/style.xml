@@ -8,19 +8,15 @@
     <Col>1</Col>
     <Panels>
       <Panel>
-        <Opt>
-          <Sample>1000</Sample>
-          <Grid></Grid>
-          <Key></Key>
-        </Opt>
-        <Xaxis name="xaxis_default" show="false"></Xaxis>
+        <Opt name="default"></Opt>
+        <Xaxis name="xaxis_default" min="2.0" show="false"></Xaxis>
         <Yaxis name="yaxis_default"></Yaxis>
         <Plot>
           <Data>
             <FileName>test.dat</FileName>
             <Opt name="default"></Opt>
           </Data>
-          <Function para="5" para="1" para="1">
+          <Function>
             <Func name="g" para="1" para="2" para="3"></Func>
             <Opt name="default"></Opt>
           </Function>

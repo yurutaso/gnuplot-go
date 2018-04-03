@@ -6,64 +6,91 @@ import (
 
 /* type Axis */
 type AxisFormat struct {
-	Format string `xml:",chardata"`
-	Tics float64  `xml:"tics,attr"`
-	Mtics float64 `xml:"mtics,attr"`
+	Format *string  `xml:",chardata"`
+	Tics   *float64 `xml:"tics,attr"`
+	Mtics  *float64 `xml:"mtics,attr"`
+}
+
+func NewAxisFormat() *AxisFormat {
+	format := "%g"
+	tics := 10.0
+	mtics := 1.0
+	return &AxisFormat{
+		Format: &format,
+		Tics:   &tics,
+		Mtics:  &mtics,
+	}
 }
 
 type AxisLabel struct {
-	Text string `xml:"text"`
-	Offset Location `xml:"offset"`
+	Text   *string   `xml:"text"`
+	Offset *Location `xml:"offset"`
+}
+
+func NewAxisLabel() *AxisLabel {
+	text := ""
+	offset := NewLocation("character", 0., 0.)
+	return &AxisLabel{
+		Text:   &text,
+		Offset: &offset,
+	}
 }
 
 type Axis struct {
-	Name        string `xml:"name,attr"`
-	Coord       string
-	Min         float64 `xml:"min,attr"`
-	Max         float64 `xml:"max,attr"`
-	Log         bool `xml:"log,attr"`
-	ShowLabel   bool `xml:"show,attr"`
-	Format      AxisFormat
-	Label       AxisLabel
+	Name      string `xml:"name,attr"`
+	Coord     string
+	Min       *float64 `xml:"min,attr"`
+	Max       *float64 `xml:"max,attr"`
+	Log       *bool    `xml:"log,attr"`
+	ShowLabel *bool    `xml:"show,attr"`
+	Format    *AxisFormat
+	Label     *AxisLabel
 }
 
 func NewAxis(coord string) *Axis {
+	min := 0.0
+	max := 10.0
+	logscale := false
+	showlabel := true
 	return &Axis{
-		Coord:        coord,
-		Min:         0,
-		Max:         10,
-		Log:         false,
-		ShowLabel:   true,
-		Format:      AxisFormat{
-			Tics: 10,
-			Mtics: 2,
-			Format: `%g`,
-		},
-		Label:       AxisLabel{
-			Text: "label",
-			Offset: NewLocation(`character`, 0., 0.),
-		},
+		Coord:     coord,
+		Min:       &min,
+		Max:       &max,
+		Log:       &logscale,
+		ShowLabel: &showlabel,
+		Format:    NewAxisFormat(),
+		Label:     NewAxisLabel(),
 	}
 }
 
-func NewAxisFromMap(name string, values map[string]interface{}) (*Axis, error) {
-	axis := NewAxis(name)
-	if values != nil {
-		for key, value := range values {
-			if err := axis.Set(key, value); err != nil {
-				return nil, err
-			}
-		}
+func (axis *Axis) Apply(new *Axis) {
+	axis.Coord = new.Coord
+	if axis.Min == nil {
+		axis.Min = new.Min
 	}
-	return axis, nil
+	if axis.Max == nil {
+		axis.Max = new.Max
+	}
+	if axis.Log == nil {
+		axis.Log = new.Log
+	}
+	if axis.ShowLabel == nil {
+		axis.ShowLabel = new.ShowLabel
+	}
+	if axis.Format == nil {
+		axis.Format = new.Format
+	}
+	if axis.Label == nil {
+		axis.Label = new.Label
+	}
 }
 
 func (axis *Axis) Show() {
-	axis.ShowLabel = true
+	*axis.ShowLabel = true
 }
 
 func (axis *Axis) Hide() {
-	axis.ShowLabel = false
+	*axis.ShowLabel = false
 }
 
 func (axis *Axis) Set(key string, value interface{}) error {
@@ -71,19 +98,19 @@ func (axis *Axis) Set(key string, value interface{}) error {
 	case `coord`:
 		axis.Coord = value.(string)
 	case `min`:
-		axis.Min = value.(float64)
+		axis.Min = value.(*float64)
 	case `max`:
-		axis.Max = value.(float64)
+		axis.Max = value.(*float64)
 	case `tics`:
-		axis.Format.Tics = value.(float64)
+		axis.Format.Tics = value.(*float64)
 	case `mtics`:
-		axis.Format.Mtics = value.(float64)
+		axis.Format.Mtics = value.(*float64)
 	case `label`:
-		axis.Label.Text = value.(string)
+		axis.Label.Text = value.(*string)
 	case `labelOffset`, `labeloffset`:
-		axis.Label.Offset = value.(Location)
+		axis.Label.Offset = value.(*Location)
 	case `log`:
-		axis.Log = value.(bool)
+		axis.Log = value.(*bool)
 	default:
 		return fmt.Errorf(`Unknow key %v`, key)
 	}
@@ -96,21 +123,21 @@ set %srange [%f:%f]
 set %stics %f
 set m%stics %f
 `,
-		axis.Coord, axis.Min, axis.Max,
-		axis.Coord, axis.Format.Tics,
-		axis.Coord, axis.Format.Mtics,
+		axis.Coord, *axis.Min, *axis.Max,
+		axis.Coord, *axis.Format.Tics,
+		axis.Coord, *axis.Format.Mtics,
 	)
-	if axis.ShowLabel {
+	if *axis.ShowLabel {
 		s += fmt.Sprintf(`set format %s "%s"
 set %slabel "%s" offset %s
 `,
-			axis.Coord, axis.Format.Format,
-			axis.Coord, axis.Label.Text, axis.Label.Offset,
+			axis.Coord, *axis.Format.Format,
+			axis.Coord, *axis.Label.Text, axis.Label.Offset,
 		)
 	} else {
 		s += fmt.Sprintf("set format %s \"\"\nset %slabel \"\"\n", axis.Coord, axis.Coord)
 	}
-	if axis.Log {
+	if *axis.Log {
 		s += fmt.Sprintf("set log %s\n", axis.Coord)
 	}
 	return s
