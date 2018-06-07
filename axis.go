@@ -139,6 +139,8 @@ set %slabel "%s" offset %s
 	}
 	if *axis.Log {
 		s += fmt.Sprintf("set log %s\n", axis.Coord)
+	} else {
+		s += fmt.Sprintf("unset log %s\n", axis.Coord)
 	}
 	return s
 }
